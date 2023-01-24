@@ -73,7 +73,7 @@ impl Decoder {
         }
     }
 
-    #[cfg(any(test, feature = "benchmarking"))]
+    #[cfg(all(any(test, feature = "benchmarking"), not(feature = "python")))]
     pub fn set_sparse_threshold(&mut self, value: u32) {
         for block_decoder in self.block_decoders.iter_mut() {
             block_decoder.set_sparse_threshold(value);
@@ -359,9 +359,13 @@ impl SourceBlockDecoder {
 #[cfg(test)]
 mod codec_tests {
     use crate::SourceBlockEncoder;
-    use crate::{Decoder, SourceBlockEncodingPlan};
+    #[cfg(not(feature = "python"))]
+    use crate::Decoder;
+    use crate::SourceBlockEncodingPlan;
+    #[cfg(not(feature = "python"))]
     use crate::{Encoder, EncoderBuilder};
     use crate::{ObjectTransmissionInformation, SourceBlockDecoder};
+    #[cfg(not(feature = "python"))]
     use rand::seq::SliceRandom;
     use rand::Rng;
     use std::sync::Arc;
@@ -371,16 +375,19 @@ mod codec_tests {
         vec::Vec,
     };
 
+    #[cfg(not(feature = "python"))]
     #[test]
     fn random_erasure_dense() {
         random_erasure(99_999);
     }
 
+    #[cfg(not(feature = "python"))]
     #[test]
     fn random_erasure_sparse() {
         random_erasure(0);
     }
 
+    #[cfg(not(feature = "python"))]
     fn random_erasure(sparse_threshold: u32) {
         let elements: usize = rand::thread_rng().gen_range(1..1_000_000);
         let mut data: Vec<u8> = vec![0; elements];
@@ -413,6 +420,7 @@ mod codec_tests {
         assert_eq!(result.unwrap(), data);
     }
 
+    #[cfg(not(feature = "python"))]
     #[test]
     fn sub_block_erasure() {
         let elements: usize = 10_000;
