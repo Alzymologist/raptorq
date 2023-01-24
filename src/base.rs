@@ -135,8 +135,10 @@ impl ObjectTransmissionInformation {
         let symbols_required =
             ((transfer_length as f64 / symbol_size as f64).ceil() / source_blocks as f64).ceil();
         #[cfg(feature = "metal")]
-        let symbols_required =
-            ((F32(transfer_length as f32) / F32(symbol_size as f32)).ceil() / F32(source_blocks as f32)).ceil().0;
+        let symbols_required = ((F32(transfer_length as f32) / F32(symbol_size as f32)).ceil()
+            / F32(source_blocks as f32))
+        .ceil()
+        .0;
         assert!((symbols_required as u32) <= MAX_SOURCE_SYMBOLS_PER_BLOCK);
         ObjectTransmissionInformation {
             transfer_length,
@@ -213,18 +215,22 @@ impl ObjectTransmissionInformation {
         let kt = (transfer_length as f64 / symbol_size as f64).ceil();
         #[cfg(feature = "metal")]
         let kt = (F32(transfer_length as f32) / F32(symbol_size as f32)).ceil();
-        
+
         #[cfg(feature = "std")]
         let n_max = (symbol_size as f64 / (sub_symbol_size * alignment) as f64).floor() as u32;
         #[cfg(feature = "metal")]
-        let n_max = (F32(symbol_size as f32) / F32((sub_symbol_size * alignment) as f32)).floor().0 as u32;
+        let n_max = (F32(symbol_size as f32) / F32((sub_symbol_size * alignment) as f32))
+            .floor()
+            .0 as u32;
 
         let kl = |n: u32| -> u32 {
             for &(kprime, _, _, _, _) in SYSTEMATIC_INDICES_AND_PARAMETERS.iter().rev() {
                 #[cfg(feature = "std")]
                 let x = (symbol_size as f64 / (alignment as u32 * n) as f64).ceil();
                 #[cfg(feature = "metal")]
-                let x = (F32(symbol_size as f32) / F32((alignment as u32 * n) as f32)).ceil().0 as f64;
+                let x = (F32(symbol_size as f32) / F32((alignment as u32 * n) as f32))
+                    .ceil()
+                    .0 as f64;
                 if kprime <= (decoder_memory_requirement as f64 / (alignment as f64 * x)) as u32 {
                     return kprime;
                 }
@@ -284,12 +290,12 @@ where
     let il = (i as f64 / j as f64).ceil() as u32;
     #[cfg(feature = "metal")]
     let il = (F32(i as f32) / F32(j as f32)).ceil().0 as u32;
-    
+
     #[cfg(feature = "std")]
     let is = (i as f64 / j as f64).floor() as u32;
     #[cfg(feature = "metal")]
     let is = (F32(i as f32) / F32(j as f32)).floor().0 as u32;
-    
+
     let jl = i - is * j;
     let js = j - jl;
     (il, is, jl, js)

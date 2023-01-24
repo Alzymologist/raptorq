@@ -43,10 +43,12 @@ impl Decoder {
     pub fn new(config: ObjectTransmissionInformation) -> Decoder {
         #[cfg(feature = "std")]
         let kt = (config.transfer_length() as f64 / config.symbol_size() as f64).ceil() as u32;
-        
+
         #[cfg(feature = "metal")]
-        let kt = (F32(config.transfer_length() as f32) / F32(config.symbol_size() as f32)).ceil().0 as u32;
-        
+        let kt = (F32(config.transfer_length() as f32) / F32(config.symbol_size() as f32))
+            .ceil()
+            .0 as u32;
+
         let (kl, ks, zl, zs) = partition(kt, config.source_blocks());
 
         let mut decoders = vec![];
@@ -73,7 +75,10 @@ impl Decoder {
         }
     }
 
-    #[cfg(all(any(test, feature = "benchmarking"), not(any(feature = "python", feature = "wasm"))))]
+    #[cfg(all(
+        any(test, feature = "benchmarking"),
+        not(any(feature = "python", feature = "wasm"))
+    ))]
     pub fn set_sparse_threshold(&mut self, value: u32) {
         for block_decoder in self.block_decoders.iter_mut() {
             block_decoder.set_sparse_threshold(value);
@@ -165,8 +170,10 @@ impl SourceBlockDecoder {
         #[cfg(feature = "std")]
         let source_symbols = (block_length as f64 / config.symbol_size() as f64).ceil() as u32;
         #[cfg(feature = "metal")]
-        let source_symbols = (F32(block_length as f32) / F32(config.symbol_size() as f32)).ceil().0 as u32;
-        
+        let source_symbols = (F32(block_length as f32) / F32(config.symbol_size() as f32))
+            .ceil()
+            .0 as u32;
+
         let mut received_esi = Set::new();
         for i in source_symbols..extended_source_block_symbols(source_symbols) {
             received_esi.insert(i);
@@ -358,27 +365,30 @@ impl SourceBlockDecoder {
 
 #[cfg(test)]
 mod codec_tests {
-    use crate::SourceBlockEncoder;
     #[cfg(not(any(feature = "python", feature = "wasm")))]
     use crate::Decoder;
+    use crate::SourceBlockEncoder;
     #[cfg(feature = "std")]
     use crate::SourceBlockEncodingPlan;
     #[cfg(not(any(feature = "python", feature = "wasm")))]
     use crate::{Encoder, EncoderBuilder};
     use crate::{ObjectTransmissionInformation, SourceBlockDecoder};
+    #[cfg(feature = "metal")]
+    use alloc::vec::Vec;
+    #[cfg(feature = "metal")]
+    use core::iter;
     #[cfg(not(any(feature = "python", feature = "wasm")))]
     use rand::seq::SliceRandom;
     use rand::Rng;
     #[cfg(feature = "std")]
     use std::{
         iter,
-        sync::{Arc, atomic::{AtomicU32, Ordering}},
+        sync::{
+            atomic::{AtomicU32, Ordering},
+            Arc,
+        },
         vec::Vec,
     };
-    #[cfg(feature = "metal")]
-    use alloc::vec::Vec;
-    #[cfg(feature = "metal")]
-    use core::iter;
 
     #[cfg(not(any(feature = "python", feature = "wasm")))]
     #[test]

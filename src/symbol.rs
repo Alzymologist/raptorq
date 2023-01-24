@@ -68,11 +68,11 @@ impl<'a> AddAssign<&'a Symbol> for Symbol {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "metal")]
+    use alloc::vec::Vec;
     use rand::Rng;
     #[cfg(feature = "std")]
     use std::vec::Vec;
-    #[cfg(feature = "metal")]
-    use alloc::vec::Vec;
 
     use crate::symbol::Symbol;
 

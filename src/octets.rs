@@ -852,11 +852,11 @@ pub fn add_assign(octets: &mut [u8], other: &[u8]) {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "metal")]
+    use alloc::vec::Vec;
     use rand::Rng;
     #[cfg(feature = "std")]
     use std::vec::Vec;
-    #[cfg(feature = "metal")]
-    use alloc::vec::Vec;
 
     use crate::octet::Octet;
     use crate::octets::mulassign_scalar;

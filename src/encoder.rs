@@ -74,8 +74,10 @@ pub fn calculate_block_offsets(
     #[cfg(feature = "std")]
     let kt = (config.transfer_length() as f64 / config.symbol_size() as f64).ceil() as u32;
     #[cfg(feature = "metal")]
-    let kt = (F32(config.transfer_length() as f32) / F32(config.symbol_size() as f32)).ceil().0 as u32;
-    
+    let kt = (F32(config.transfer_length() as f32) / F32(config.symbol_size() as f32))
+        .ceil()
+        .0 as u32;
+
     let (kl, ks, zl, zs) = partition(kt, config.source_blocks());
 
     let mut data_index = 0;
@@ -445,11 +447,11 @@ fn enc(
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "metal")]
+    use alloc::vec::Vec;
     use rand::Rng;
     #[cfg(feature = "std")]
     use std::vec::Vec;
-    #[cfg(feature = "metal")]
-    use alloc::vec::Vec;
 
     use crate::base::intermediate_tuple;
     use crate::encoder::enc;
@@ -462,10 +464,10 @@ mod tests {
     };
     #[cfg(not(any(feature = "python", feature = "wasm")))]
     use crate::{Encoder, EncoderBuilder, EncodingPacket, ObjectTransmissionInformation};
-    #[cfg(all(feature = "std", not(feature = "python"), not(feature = "wasm")))]
-    use std::collections::HashSet as Set;
     #[cfg(feature = "metal")]
     use alloc::collections::BTreeSet as Set;
+    #[cfg(all(feature = "std", not(feature = "python"), not(feature = "wasm")))]
+    use std::collections::HashSet as Set;
 
     const SYMBOL_SIZE: usize = 4;
     const NUM_SYMBOLS: u32 = 100;

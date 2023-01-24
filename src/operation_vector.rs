@@ -61,11 +61,11 @@ pub fn perform_op(op: &SymbolOps, symbols: &mut Vec<Symbol>) {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "metal")]
+    use alloc::vec::Vec;
     use rand::Rng;
     #[cfg(feature = "std")]
     use std::vec::Vec;
-    #[cfg(feature = "metal")]
-    use alloc::vec::Vec;
 
     use crate::octet::Octet;
     use crate::operation_vector::{perform_op, SymbolOps};

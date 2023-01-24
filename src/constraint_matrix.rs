@@ -184,11 +184,11 @@ mod tests {
     use crate::systematic_constants::{
         extended_source_block_symbols, num_hdpc_symbols, num_ldpc_symbols,
     };
+    #[cfg(feature = "metal")]
+    use alloc::vec::Vec;
     use rand::Rng;
     #[cfg(feature = "std")]
     use std::vec::Vec;
-    #[cfg(feature = "metal")]
-    use alloc::vec::Vec;
 
     #[allow(non_snake_case)]
     fn reference_generate_hdpc_rows(Kprime: usize, S: usize, H: usize) -> DenseOctetMatrix {

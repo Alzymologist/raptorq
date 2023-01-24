@@ -1,8 +1,8 @@
 #[cfg(feature = "std")]
-use std::{u32, mem::size_of, ops::Range, vec::Vec};
+use std::{mem::size_of, ops::Range, u32, vec::Vec};
 
 #[cfg(feature = "metal")]
-use core::{u32, mem::size_of, ops::Range};
+use core::{mem::size_of, ops::Range, u32};
 
 #[cfg(feature = "metal")]
 use alloc::vec::Vec;

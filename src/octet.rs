@@ -1,5 +1,5 @@
 #[cfg(feature = "std")]
-use std::{ops::{Add, AddAssign, Div, Mul, Sub}};
+use std::ops::{Add, AddAssign, Div, Mul, Sub};
 
 #[cfg(feature = "metal")]
 use core::ops::{Add, AddAssign, Div, Mul, Sub};

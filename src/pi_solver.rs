@@ -1,11 +1,11 @@
 #[cfg(feature = "std")]
-use std::{u16, mem, mem::size_of, vec::Vec};
+use std::{mem, mem::size_of, u16, vec::Vec};
 
 #[cfg(feature = "metal")]
 use alloc::vec::Vec;
 
 #[cfg(feature = "metal")]
-use core::{u16, mem, mem::size_of};
+use core::{mem, mem::size_of, u16};
 
 use crate::arraymap::UndirectedGraph;
 use crate::arraymap::{U16ArrayMap, U32VecMap};
@@ -1338,10 +1338,6 @@ pub fn fused_inverse_mul_symbols<T: BinaryMatrix>(
 
 #[cfg(test)]
 mod tests {
-    #[cfg(feature = "std")]
-    use std::vec::Vec;
-    #[cfg(feature = "metal")]
-    use alloc::vec::Vec;
     use super::IntermediateSymbolDecoder;
     use crate::constraint_matrix::generate_constraint_matrix;
     use crate::matrix::BinaryMatrix;
@@ -1351,6 +1347,10 @@ mod tests {
         extended_source_block_symbols, num_ldpc_symbols, num_lt_symbols,
         MAX_SOURCE_SYMBOLS_PER_BLOCK,
     };
+    #[cfg(feature = "metal")]
+    use alloc::vec::Vec;
+    #[cfg(feature = "std")]
+    use std::vec::Vec;
 
     #[test]
     fn operations_per_symbol() {
