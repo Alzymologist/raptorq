@@ -73,7 +73,7 @@ impl Decoder {
         }
     }
 
-    #[cfg(all(any(test, feature = "benchmarking"), not(feature = "python")))]
+    #[cfg(all(any(test, feature = "benchmarking"), not(any(feature = "python", feature = "wasm"))))]
     pub fn set_sparse_threshold(&mut self, value: u32) {
         for block_decoder in self.block_decoders.iter_mut() {
             block_decoder.set_sparse_threshold(value);
@@ -359,35 +359,40 @@ impl SourceBlockDecoder {
 #[cfg(test)]
 mod codec_tests {
     use crate::SourceBlockEncoder;
-    #[cfg(not(feature = "python"))]
+    #[cfg(not(any(feature = "python", feature = "wasm")))]
     use crate::Decoder;
+    #[cfg(feature = "std")]
     use crate::SourceBlockEncodingPlan;
-    #[cfg(not(feature = "python"))]
+    #[cfg(not(any(feature = "python", feature = "wasm")))]
     use crate::{Encoder, EncoderBuilder};
     use crate::{ObjectTransmissionInformation, SourceBlockDecoder};
-    #[cfg(not(feature = "python"))]
+    #[cfg(not(any(feature = "python", feature = "wasm")))]
     use rand::seq::SliceRandom;
     use rand::Rng;
-    use std::sync::Arc;
+    #[cfg(feature = "std")]
     use std::{
         iter,
-        sync::atomic::{AtomicU32, Ordering},
+        sync::{Arc, atomic::{AtomicU32, Ordering}},
         vec::Vec,
     };
+    #[cfg(feature = "metal")]
+    use alloc::vec::Vec;
+    #[cfg(feature = "metal")]
+    use core::iter;
 
-    #[cfg(not(feature = "python"))]
+    #[cfg(not(any(feature = "python", feature = "wasm")))]
     #[test]
     fn random_erasure_dense() {
         random_erasure(99_999);
     }
 
-    #[cfg(not(feature = "python"))]
+    #[cfg(not(any(feature = "python", feature = "wasm")))]
     #[test]
     fn random_erasure_sparse() {
         random_erasure(0);
     }
 
-    #[cfg(not(feature = "python"))]
+    #[cfg(not(any(feature = "python", feature = "wasm")))]
     fn random_erasure(sparse_threshold: u32) {
         let elements: usize = rand::thread_rng().gen_range(1..1_000_000);
         let mut data: Vec<u8> = vec![0; elements];
@@ -420,7 +425,7 @@ mod codec_tests {
         assert_eq!(result.unwrap(), data);
     }
 
-    #[cfg(not(feature = "python"))]
+    #[cfg(not(any(feature = "python", feature = "wasm")))]
     #[test]
     fn sub_block_erasure() {
         let elements: usize = 10_000;
@@ -496,6 +501,7 @@ mod codec_tests {
             }
 
             if progress && symbol_count % 100 == 0 {
+                #[cfg(feature = "std")]
                 println!("Completed {} symbols", symbol_count)
             }
 
@@ -515,33 +521,39 @@ mod codec_tests {
         }
     }
 
+    #[cfg(feature = "std")]
     #[test]
     #[ignore]
     fn repair_dense_extended() {
         repair(99_999, 5000, true, false);
     }
 
+    #[cfg(feature = "std")]
     #[test]
     #[ignore]
     fn repair_sparse_extended() {
         repair(0, 56403, true, false);
     }
 
+    #[cfg(feature = "std")]
     #[test]
     fn repair_dense() {
         repair(99_999, 50, false, false);
     }
 
+    #[cfg(feature = "std")]
     #[test]
     fn repair_sparse() {
         repair(0, 50, false, false);
     }
 
+    #[cfg(feature = "std")]
     #[test]
     fn repair_dense_pre_planned() {
         repair(99_999, 50, false, true);
     }
 
+    #[cfg(feature = "std")]
     #[test]
     fn repair_sparse_pre_planned() {
         repair(0, 50, false, true);
@@ -572,6 +584,7 @@ mod codec_tests {
         }
     }
 
+    #[cfg(feature = "std")]
     fn repair(sparse_threshold: u32, max_symbols: usize, progress: bool, pre_plan: bool) {
         let pool = threadpool::Builder::new().build();
         let failed = Arc::new(AtomicU32::new(0));
@@ -596,6 +609,7 @@ mod codec_tests {
         assert_eq!(0, failed.load(Ordering::SeqCst));
     }
 
+    #[cfg(feature = "std")]
     fn do_repair(symbol_count: usize, sparse_threshold: u32, pre_plan: bool) -> bool {
         let symbol_size = 8;
         let elements = symbol_size * symbol_count;

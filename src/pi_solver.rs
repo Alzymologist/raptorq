@@ -1338,7 +1338,10 @@ pub fn fused_inverse_mul_symbols<T: BinaryMatrix>(
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "std")]
     use std::vec::Vec;
+    #[cfg(feature = "metal")]
+    use alloc::vec::Vec;
     use super::IntermediateSymbolDecoder;
     use crate::constraint_matrix::generate_constraint_matrix;
     use crate::matrix::BinaryMatrix;
