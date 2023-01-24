@@ -1,3 +1,15 @@
+#[cfg(feature = "std")]
+use std::{collections::HashSet as Set, iter, vec::Vec};
+
+#[cfg(feature = "metal")]
+use core::iter;
+
+#[cfg(feature = "metal")]
+use alloc::{collections::BTreeSet as Set, vec::Vec};
+
+#[cfg(feature = "metal")]
+use micromath::F32;
+
 use crate::base::intermediate_tuple;
 use crate::base::partition;
 use crate::base::EncodingPacket;
@@ -17,7 +29,6 @@ use crate::systematic_constants::{
 };
 #[cfg(feature = "serde_support")]
 use serde::{Deserialize, Serialize};
-use std::{collections::HashSet, iter};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde_support", derive(Serialize, Deserialize))]
@@ -28,8 +39,14 @@ pub struct Decoder {
 }
 
 impl Decoder {
+    #[cfg(any(feature = "std", feature = "metal"))]
     pub fn new(config: ObjectTransmissionInformation) -> Decoder {
+        #[cfg(feature = "std")]
         let kt = (config.transfer_length() as f64 / config.symbol_size() as f64).ceil() as u32;
+        
+        #[cfg(feature = "metal")]
+        let kt = (F32(config.transfer_length() as f32) / F32(config.symbol_size() as f32)).ceil().0 as u32;
+        
         let (kl, ks, zl, zs) = partition(kt, config.source_blocks());
 
         let mut decoders = vec![];
@@ -84,6 +101,7 @@ impl Decoder {
         Some(result)
     }
 
+    #[cfg(not(any(feature = "python", feature = "wasm")))]
     pub fn add_new_packet(&mut self, packet: EncodingPacket) {
         let block_number = packet.payload_id.source_block_number() as usize;
         if self.blocks[block_number].is_none() {
@@ -92,6 +110,7 @@ impl Decoder {
         }
     }
 
+    #[cfg(not(any(feature = "python", feature = "wasm")))]
     pub fn get_result(&self) -> Option<Vec<u8>> {
         for block in self.blocks.iter() {
             if block.is_none() {
@@ -110,6 +129,7 @@ impl Decoder {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde_support", derive(Serialize, Deserialize))]
+#[cfg(any(feature = "std", feature = "metal"))]
 pub struct SourceBlockDecoder {
     source_block_id: u8,
     symbol_size: u16,
@@ -119,7 +139,7 @@ pub struct SourceBlockDecoder {
     source_symbols: Vec<Option<Symbol>>,
     repair_packets: Vec<EncodingPacket>,
     received_source_symbols: u32,
-    received_esi: HashSet<u32>,
+    received_esi: Set<u32>,
     decoded: bool,
     sparse_threshold: u32,
 }
@@ -129,19 +149,25 @@ impl SourceBlockDecoder {
         since = "1.3.0",
         note = "Use the new2() function instead. In version 2.0, that function will replace this one"
     )]
+    #[cfg(feature = "std")]
     pub fn new(source_block_id: u8, symbol_size: u16, block_length: u64) -> SourceBlockDecoder {
         let config = ObjectTransmissionInformation::new(0, symbol_size, 0, 1, 1);
         SourceBlockDecoder::new2(source_block_id, &config, block_length)
     }
 
     // TODO: rename this to new() in version 2.0
+    #[cfg(any(feature = "std", feature = "metal"))]
     pub fn new2(
         source_block_id: u8,
         config: &ObjectTransmissionInformation,
         block_length: u64,
     ) -> SourceBlockDecoder {
+        #[cfg(feature = "std")]
         let source_symbols = (block_length as f64 / config.symbol_size() as f64).ceil() as u32;
-        let mut received_esi = HashSet::new();
+        #[cfg(feature = "metal")]
+        let source_symbols = (F32(block_length as f32) / F32(config.symbol_size() as f32)).ceil().0 as u32;
+        
+        let mut received_esi = Set::new();
         for i in source_symbols..extended_source_block_symbols(source_symbols) {
             received_esi.insert(i);
         }
@@ -228,6 +254,7 @@ impl SourceBlockDecoder {
         return Some(result);
     }
 
+    #[cfg(any(feature = "std", feature = "metal"))]
     pub fn decode<T: IntoIterator<Item = EncodingPacket>>(
         &mut self,
         packets: T,
@@ -341,6 +368,7 @@ mod codec_tests {
     use std::{
         iter,
         sync::atomic::{AtomicU32, Ordering},
+        vec::Vec,
     };
 
     #[test]

@@ -1,3 +1,12 @@
+#[cfg(feature = "std")]
+use std::vec::Vec;
+
+#[cfg(feature = "metal")]
+use alloc::vec::Vec;
+
+#[cfg(feature = "metal")]
+use micromath::F32;
+
 use crate::base::intermediate_tuple;
 use crate::base::partition;
 use crate::base::EncodingPacket;
@@ -57,11 +66,16 @@ impl EncoderBuilder {
 
 // Calculate the splits [start, end) of an object for encoding as blocks.
 // If a block extends past the end of the object, it must be zero padded
+#[cfg(any(feature = "std", feature = "metal"))]
 pub fn calculate_block_offsets(
     data: &[u8],
     config: &ObjectTransmissionInformation,
 ) -> Vec<(usize, usize)> {
+    #[cfg(feature = "std")]
     let kt = (config.transfer_length() as f64 / config.symbol_size() as f64).ceil() as u32;
+    #[cfg(feature = "metal")]
+    let kt = (F32(config.transfer_length() as f32) / F32(config.symbol_size() as f32)).ceil().0 as u32;
+    
     let (kl, ks, zl, zs) = partition(kt, config.source_blocks());
 
     let mut data_index = 0;
@@ -432,6 +446,7 @@ fn enc(
 #[cfg(test)]
 mod tests {
     use rand::Rng;
+    use std::vec::Vec;
 
     use crate::base::intermediate_tuple;
     use crate::encoder::enc;
