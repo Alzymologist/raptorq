@@ -128,9 +128,15 @@ impl ObjectTransmissionInformation {
         assert!(transfer_length <= 942574504275);
         assert_eq!(symbol_size % alignment as u16, 0);
         // See section 4.4.1.2. "These parameters MUST be set so that ceil(ceil(F/T)/Z) <= K'_max."
-// TODO this occasionally was doing assertions on NaN, naturally panics on integers now, fix later
-//        let symbols_required = int_div_ceil(int_div_ceil(transfer_length, symbol_size as u64) as u64, source_blocks as u64);
-//        assert!((symbols_required) <= MAX_SOURCE_SYMBOLS_PER_BLOCK);
+
+        if (symbol_size != 0) && (source_blocks != 0) {
+            let symbols_required = int_div_ceil(
+                int_div_ceil(transfer_length, symbol_size as u64) as u64,
+                source_blocks as u64,
+            );
+            assert!((symbols_required) <= MAX_SOURCE_SYMBOLS_PER_BLOCK);
+        }
+
         ObjectTransmissionInformation {
             transfer_length,
             symbol_size,
